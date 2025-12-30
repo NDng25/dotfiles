@@ -1,43 +1,37 @@
--- pull lazy vim
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
-    vim.fn.system({
-        "git",
-        "clone",
-        "--filter=blob:none",
-        "https://github.com/folke/lazy.nvim.git",
-        "--branch=stable",
-        lazypath,
-    })
+vim.g.base46_cache = vim.fn.stdpath "data" .. "/base46/"
+vim.g.mapleader = " "
+
+-- bootstrap lazy and all plugins
+local lazypath = vim.fn.stdpath "data" .. "/lazy/lazy.nvim"
+
+if not vim.uv.fs_stat(lazypath) then
+  local repo = "https://github.com/folke/lazy.nvim.git"
+  vim.fn.system { "git", "clone", "--filter=blob:none", repo, "--branch=stable", lazypath }
 end
+
 vim.opt.rtp:prepend(lazypath)
--- Load configurations
-require('vim-options')
-require('lazy').setup('plugins')
-require('config.keymap')
 
--- Function to set transparency for various UI elements
-local function set_transparency()
-    local highlights = {
-        "Normal",
-        "NormalFloat",
-        "NormalNC", -- Normal text in non-current windows
-        "SignColumn",
-        "StatusLine",
-        "StatusLineNC",
-        "EndOfBuffer",
-        "MsgArea",
-    }
-    
-    for _, group in ipairs(highlights) do
-        vim.api.nvim_set_hl(0, group, { bg = "none", ctermbg = "none" })
-    end
-end
+local lazy_config = require "configs.lazy"
 
--- Re-apply transparency after the colorscheme is loaded
-vim.api.nvim_create_autocmd("ColorScheme", {
-    callback = set_transparency,
-})
+-- load plugins
+require("lazy").setup({
+  {
+    "NvChad/NvChad",
+    lazy = false,
+    branch = "v2.5",
+    import = "nvchad.plugins",
+  },
 
--- Execute once on startup
-set_transparency()
+  { import = "plugins" },
+}, lazy_config)
+
+-- load theme
+dofile(vim.g.base46_cache .. "defaults")
+dofile(vim.g.base46_cache .. "statusline")
+
+require "options"
+require "autocmds"
+
+vim.schedule(function()
+  require "mappings"
+end)
