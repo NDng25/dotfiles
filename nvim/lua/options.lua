@@ -21,3 +21,6 @@ vim.api.nvim_create_autocmd("UIEnter", {
     end
   end,
 })
+
+-- Auto read files when changed outside of nvim
+vim.opt.autoread = true
